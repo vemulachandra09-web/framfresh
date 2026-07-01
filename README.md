@@ -132,6 +132,15 @@ WHATSAPP_TOKEN=your-token
 WHATSAPP_PHONE_ID=your-phone-id
 ```
 
+## Production Logging
+
+The backend writes request logs, unhandled exception traces, and key business events such as login, order creation, payments, subscriptions, delivery updates, and WhatsApp commands to stdout. Configure verbosity with:
+```
+LOG_LEVEL=INFO
+```
+
+Use `DEBUG` only for short troubleshooting sessions. Logs mask phone numbers and do not include passwords, JWT tokens, or WhatsApp tokens.
+
 ## License
 
 Private - All rights reserved.

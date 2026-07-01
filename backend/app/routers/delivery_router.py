@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
@@ -9,6 +10,7 @@ from ..auth import get_current_user
 from ..services.notify import notify_user, notify_admins
 
 router = APIRouter(prefix="/api/deliveries", tags=["Deliveries"])
+logger = logging.getLogger("farmfresh.deliveries")
 
 
 @router.get("/track/{order_id}", response_model=DeliveryResponse)
@@ -23,10 +25,12 @@ def track_delivery(
         .first()
     )
     if not order:
+        logger.warning("event=delivery_track_order_not_found user_id=%s order_id=%s", current_user.id, order_id)
         raise HTTPException(status_code=404, detail="Order not found")
 
     delivery = db.query(Delivery).filter(Delivery.order_id == order_id).first()
     if not delivery:
+        logger.warning("event=delivery_track_missing user_id=%s order_id=%s", current_user.id, order_id)
         raise HTTPException(status_code=404, detail="Delivery tracking not available")
     return delivery
 
@@ -40,11 +44,19 @@ def update_delivery_status(
 ):
     delivery = db.query(Delivery).filter(Delivery.id == delivery_id).first()
     if not delivery:
+        logger.warning("event=delivery_update_not_found user_id=%s delivery_id=%s", current_user.id, delivery_id)
         raise HTTPException(status_code=404, detail="Delivery not found")
 
     if current_user.role not in ("admin", "delivery_partner"):
+        logger.warning(
+            "event=delivery_update_forbidden user_id=%s delivery_id=%s role=%s",
+            current_user.id,
+            delivery_id,
+            current_user.role,
+        )
         raise HTTPException(status_code=403, detail="Not authorized")
 
+    old_status = delivery.status
     delivery.status = data.status
     if data.latitude:
         delivery.latitude = data.latitude
@@ -72,6 +84,14 @@ def update_delivery_status(
 
     db.commit()
     db.refresh(delivery)
+    logger.info(
+        "event=delivery_status_updated delivery_id=%s order_id=%s actor_user_id=%s old_status=%s new_status=%s",
+        delivery.id,
+        delivery.order_id,
+        current_user.id,
+        old_status,
+        delivery.status,
+    )
     return delivery
 
 
@@ -89,14 +109,23 @@ def rate_delivery(
         .first()
     )
     if not delivery:
+        logger.warning("event=delivery_rating_delivery_not_found user_id=%s delivery_id=%s", current_user.id, delivery_id)
         raise HTTPException(status_code=404, detail="Delivery not found")
     if delivery.order.user_id != current_user.id:
+        logger.warning("event=delivery_rating_forbidden user_id=%s delivery_id=%s", current_user.id, delivery_id)
         raise HTTPException(status_code=403, detail="Not your delivery")
     if delivery.status != "delivered":
+        logger.warning(
+            "event=delivery_rating_invalid_status user_id=%s delivery_id=%s status=%s",
+            current_user.id,
+            delivery_id,
+            delivery.status,
+        )
         raise HTTPException(status_code=400, detail="Can only rate delivered orders")
 
     existing = db.query(DeliveryRating).filter(DeliveryRating.delivery_id == delivery_id).first()
     if existing:
+        logger.warning("event=delivery_rating_duplicate user_id=%s delivery_id=%s", current_user.id, delivery_id)
         raise HTTPException(status_code=400, detail="Already rated this delivery")
 
     rating = DeliveryRating(
@@ -109,6 +138,13 @@ def rate_delivery(
     db.add(rating)
     db.commit()
     db.refresh(rating)
+    logger.info(
+        "event=delivery_rated delivery_id=%s user_id=%s quality=%s timing=%s",
+        delivery_id,
+        current_user.id,
+        data.quality_rating,
+        data.timing_rating,
+    )
     return rating
 
 
@@ -120,5 +156,6 @@ def get_rating(
 ):
     rating = db.query(DeliveryRating).filter(DeliveryRating.delivery_id == delivery_id).first()
     if not rating:
+        logger.warning("event=delivery_rating_not_found user_id=%s delivery_id=%s", current_user.id, delivery_id)
         raise HTTPException(status_code=404, detail="No rating found")
     return rating

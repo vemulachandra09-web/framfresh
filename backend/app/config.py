@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     whatsapp_phone_id: str = ""
     whatsapp_verify_token: str = "farmfresh_whatsapp_verify_2026"
     redis_url: str = "redis://localhost:6379/0"
+    log_level: str = "INFO"
 
     class Config:
         env_file = ".env"

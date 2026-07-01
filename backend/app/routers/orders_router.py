@@ -1,3 +1,4 @@
+import logging
 import random
 import string
 from datetime import date
@@ -11,6 +12,7 @@ from ..auth import get_current_user
 from ..services.notify import notify_user, notify_admins
 
 router = APIRouter(prefix="/api/orders", tags=["Orders"])
+logger = logging.getLogger("farmfresh.orders")
 
 
 def generate_order_number() -> str:
@@ -26,6 +28,11 @@ def create_order(
 ):
     product = db.query(Product).filter(Product.id == data.product_id).first()
     if not product:
+        logger.warning(
+            "event=order_product_missing user_id=%s product_id=%s",
+            current_user.id,
+            data.product_id,
+        )
         raise HTTPException(status_code=404, detail="Product not found")
 
     total = float(product.price_per_day) * data.quantity
@@ -57,6 +64,15 @@ def create_order(
                   "order")
     db.commit()
     db.refresh(order)
+    logger.info(
+        "event=order_created order_id=%s order_number=%s user_id=%s product_id=%s quantity=%s total=%.2f",
+        order.id,
+        order.order_number,
+        current_user.id,
+        product.id,
+        data.quantity,
+        total,
+    )
     return order
 
 
@@ -106,5 +122,6 @@ def get_order(
         .first()
     )
     if not order:
+        logger.warning("event=order_not_found user_id=%s order_id=%s", current_user.id, order_id)
         raise HTTPException(status_code=404, detail="Order not found")
     return order

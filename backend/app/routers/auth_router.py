@@ -1,11 +1,15 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models import User
 from ..schemas import UserCreate, UserLogin, UserResponse, UserUpdate, Token
 from ..auth import hash_password, verify_password, create_access_token, get_current_user
+from ..logging_config import mask_phone
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+logger = logging.getLogger("farmfresh.auth")
 
 
 _login_attempts: dict[str, list] = {}
@@ -20,6 +24,7 @@ def _check_rate_limit(phone: str):
     attempts = [t for t in attempts if now - t < LOCKOUT_SECONDS]
     _login_attempts[phone] = attempts
     if len(attempts) >= MAX_LOGIN_ATTEMPTS:
+        logger.warning("event=login_rate_limited phone=%s", mask_phone(phone))
         raise HTTPException(
             status_code=429,
             detail=f"Too many login attempts. Try again after {LOCKOUT_SECONDS // 60} minutes",
@@ -38,8 +43,10 @@ def _clear_attempts(phone: str):
 @router.post("/register", response_model=Token)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
     if db.query(User).filter(User.phone == user_data.phone).first():
+        logger.warning("event=register_duplicate_phone phone=%s", mask_phone(user_data.phone))
         raise HTTPException(status_code=400, detail="Phone number already registered")
     if user_data.email and db.query(User).filter(User.email == user_data.email).first():
+        logger.warning("event=register_duplicate_email phone=%s", mask_phone(user_data.phone))
         raise HTTPException(status_code=400, detail="Email already registered")
 
     user = User(
@@ -55,6 +62,12 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
+    logger.info(
+        "event=user_registered user_id=%s phone=%s role=%s",
+        user.id,
+        mask_phone(user.phone),
+        user.role,
+    )
     token = create_access_token({"sub": str(user.id), "role": user.role})
     return Token(access_token=token, token_type="bearer", user=UserResponse.model_validate(user))
 
@@ -66,12 +79,24 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.phone == credentials.phone).first()
     if not user or not verify_password(credentials.password, user.password_hash):
         _record_failed_attempt(credentials.phone)
+        logger.warning("event=login_failed phone=%s", mask_phone(credentials.phone))
         raise HTTPException(status_code=401, detail="Invalid phone number or password")
 
     if not user.is_active:
+        logger.warning(
+            "event=login_inactive_user user_id=%s phone=%s",
+            user.id,
+            mask_phone(user.phone),
+        )
         raise HTTPException(status_code=403, detail="Account is deactivated. Contact support")
 
     _clear_attempts(credentials.phone)
+    logger.info(
+        "event=login_success user_id=%s phone=%s role=%s",
+        user.id,
+        mask_phone(user.phone),
+        user.role,
+    )
     token = create_access_token({"sub": str(user.id), "role": user.role})
     return Token(access_token=token, token_type="bearer", user=UserResponse.model_validate(user))
 
@@ -91,4 +116,5 @@ def update_me(
         setattr(current_user, field, value)
     db.commit()
     db.refresh(current_user)
+    logger.info("event=user_profile_updated user_id=%s", current_user.id)
     return current_user

@@ -1,12 +1,15 @@
+import logging
 from datetime import date, datetime
 from fastapi import APIRouter, Request, Query, Response
 from sqlalchemy.orm import Session, joinedload
 from ..database import SessionLocal
 from ..models import User, Subscription, Order, Payment, Notification
 from ..config import settings
+from ..logging_config import mask_phone
 from ..services.whatsapp import send_whatsapp_message
 
 router = APIRouter(prefix="/api/whatsapp", tags=["WhatsApp Bot"])
+logger = logging.getLogger("farmfresh.whatsapp")
 
 
 def get_db():
@@ -31,7 +34,9 @@ def verify_webhook(
     challenge: str = Query(None, alias="hub.challenge"),
 ):
     if mode == "subscribe" and token == settings.whatsapp_verify_token:
+        logger.info("event=whatsapp_webhook_verified")
         return Response(content=challenge, media_type="text/plain")
+    logger.warning("event=whatsapp_webhook_verify_failed mode=%s", mode)
     return {"status": "forbidden"}
 
 
@@ -39,6 +44,7 @@ def verify_webhook(
 async def receive_message(request: Request):
     body = await request.json()
 
+    processed = 0
     entries = body.get("entry", [])
     for entry in entries:
         for change in entry.get("changes", []):
@@ -46,12 +52,21 @@ async def receive_message(request: Request):
             messages = value.get("messages", [])
             for msg in messages:
                 if msg.get("type") != "text":
+                    logger.info("event=whatsapp_message_ignored type=%s", msg.get("type"))
                     continue
                 phone = msg["from"].lstrip("91")
                 text = msg["text"]["body"].strip().lower()
+                command = text.split()[0] if text else ""
+                logger.info(
+                    "event=whatsapp_command_received phone=%s command=%s",
+                    mask_phone(phone),
+                    command,
+                )
                 reply = await process_command(phone, text)
                 await send_whatsapp_message(phone, reply)
+                processed += 1
 
+    logger.info("event=whatsapp_webhook_processed messages=%s", processed)
     return {"status": "ok"}
 
 
@@ -60,6 +75,7 @@ async def process_command(phone: str, command: str) -> str:
     try:
         user = db.query(User).filter(User.phone == phone).first()
         if not user:
+            logger.info("event=whatsapp_unknown_user phone=%s", mask_phone(phone))
             return (
                 "Welcome to FarmFresh! 🐄\n\n"
                 "Your phone number is not registered.\n"
@@ -68,6 +84,7 @@ async def process_command(phone: str, command: str) -> str:
             )
 
         cmd = command.split()[0] if command else ""
+        logger.info("event=whatsapp_command_processing user_id=%s command=%s", user.id, cmd)
 
         if cmd == "help":
             return _cmd_help(user.name)
