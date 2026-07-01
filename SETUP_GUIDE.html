@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FarmFresh Milk Delivery - Setup Guide</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: #1a1a1a; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 40px 30px; }
+  h1 { font-size: 28px; font-weight: 600; text-align: center; margin-bottom: 4px; }
+  .subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 30px; }
+  .logo { text-align: center; font-size: 48px; margin-bottom: 10px; }
+
+  .prereq { background: #e8f4fd; border-radius: 8px; padding: 16px 20px; margin-bottom: 30px; }
+  .prereq h3 { font-size: 14px; color: #0c447c; margin-bottom: 6px; }
+  .prereq ul { font-size: 13px; color: #185fa5; padding-left: 20px; }
+  .prereq li { margin-bottom: 2px; }
+
+  .step { margin-bottom: 28px; page-break-inside: avoid; }
+  .step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .step-num { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; color: white; flex-shrink: 0; }
+  .step-num.blue { background: #378add; }
+  .step-num.green { background: #1d9e75; }
+  .step-num.purple { background: #7f77dd; }
+  .step-num.teal { background: #0f6e56; }
+  .step h2 { font-size: 18px; font-weight: 600; }
+  .step-body { margin-left: 46px; }
+  .step-body p { font-size: 14px; color: #444; margin-bottom: 6px; }
+
+  .cmd { background: #1a1a2e; color: #e0e0e0; border-radius: 6px; padding: 12px 16px; font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 13px; margin: 8px 0; line-height: 1.8; white-space: pre-wrap; }
+  .cmd .comment { color: #666; }
+
+  .warning { background: #fef3cd; border-radius: 6px; padding: 10px 14px; margin: 8px 0; font-size: 13px; color: #856404; }
+  .warning::before { content: "⚠ "; }
+
+  .info { background: #f0f0f0; border-radius: 6px; padding: 10px 14px; margin: 8px 0; font-size: 13px; color: #555; }
+  .info::before { content: "ℹ "; }
+
+  code { font-family: 'Cascadia Code', 'Consolas', monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+
+  .cred-card { border: 1px solid #ddd; border-radius: 8px; padding: 14px 18px; margin: 8px 0; }
+  .cred-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .cred-row { display: flex; gap: 12px; font-size: 13px; margin-bottom: 2px; }
+  .cred-label { color: #888; width: 80px; }
+
+  .section { border-top: 1px solid #e0e0e0; padding-top: 20px; margin-top: 24px; }
+  .section h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+
+  .tree { background: #1a1a2e; color: #e0e0e0; border-radius: 6px; padding: 14px 16px; font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 13px; line-height: 1.8; }
+  .tree .dim { color: #666; }
+
+  .trouble-item { margin-bottom: 12px; }
+  .trouble-item h4 { font-size: 14px; color: #c0392b; margin-bottom: 2px; }
+  .trouble-item p { font-size: 13px; color: #555; }
+
+  .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; color: #999; font-size: 12px; }
+
+  @media print {
+    body { padding: 20px; }
+    .step { page-break-inside: avoid; }
+    .cmd { background: #f5f5f5; color: #1a1a1a; border: 1px solid #ddd; }
+    .cmd .comment { color: #999; }
+    .tree { background: #f5f5f5; color: #1a1a1a; border: 1px solid #ddd; }
+    .tree .dim { color: #999; }
+  }
+</style>
+</head>
+<body>
+
+<div class="logo">🐄</div>
+<h1>FarmFresh Milk Delivery</h1>
+<p class="subtitle">Setup Guide — New Laptop Installation</p>
+
+<div class="prereq">
+  <h3>Prerequisites</h3>
+  <ul>
+    <li>Windows 10 or 11</li>
+    <li>Internet connection (to download installers)</li>
+    <li>Admin rights on the laptop</li>
+  </ul>
+</div>
+
+<!-- Step 1 -->
+<div class="step">
+  <div class="step-header">
+    <div class="step-num blue">1</div>
+    <h2>Install Python 3.11+</h2>
+  </div>
+  <div class="step-body">
+    <p>Download from <b>https://www.python.org/downloads/</b></p>
+    <div class="warning">Check "Add Python to PATH" checkbox during installation!</div>
+    <p>Verify installation:</p>
+    <div class="cmd">python --version</div>
+  </div>
+</div>
+
+<!-- Step 2 -->
+<div class="step">
+  <div class="step-header">
+    <div class="step-num blue">2</div>
+    <h2>Install Node.js 18+ (LTS)</h2>
+  </div>
+  <div class="step-body">
+    <p>Download LTS version from <b>https://nodejs.org/</b></p>
+    <p>Verify installation:</p>
+    <div class="cmd">node --version
+npm --version</div>
+  </div>
+</div>
+
+<!-- Step 3 -->
+<div class="step">
+  <div class="step-header">
+    <div class="step-num blue">3</div>
+    <h2>Install PostgreSQL 15</h2>
+  </div>
+  <div class="step-body">
+    <p>Download from <b>https://www.postgresql.org/download/windows/</b></p>
+    <p>During installation:</p>
+    <ul style="font-size: 14px; margin: 6px 0 10px 20px; line-height: 1.8;">
+      <li>Set superuser password to: <code>1234</code></li>
+      <li>Keep default port: <code>5432</code></li>
+      <li>Keep default user: <code>postgres</code></li>
+      <li>Install pgAdmin 4 (optional, but helpful for visual DB management)</li>
+    </ul>
+    <p>Verify installation:</p>
+    <div class="cmd">psql -U postgres -h localhost
+<span class="comment">-- Enter password when prompted: 1234</span>
+<span class="comment">-- Type \q to exit</span></div>
+    <div class="warning">If <code>psql</code> is not recognized, add PostgreSQL to PATH:<br><code>C:\Program Files\PostgreSQL\15\bin</code><br>Go to: System Properties → Environment Variables → Path → New → paste the above path</div>
+  </div>
+</div>
+
+<!-- Step 4 -->
+<div class="step">
+  <div class="step-header">
+    <div class="step-num green">4</div>
+    <h2>Copy the project folder</h2>
+  </div>
+  <div class="step-body">
+    <p>Copy the entire <code>farmfresh</code> folder to the new laptop (USB drive, cloud, etc.)</p>
+    <p>Recommended location: <code>C:\Users\{YourName}\farmfresh</code></p>
+    <div class="info">Do NOT copy the <code>backend\venv</code> and <code>frontend\node_modules</code> folders — they will be recreated in the next steps.</div>
+  </div>
+</div>
+
+<!-- Step 5 -->
+<div class="step">
+  <div class="step-header">
+    <div class="step-num green">5</div>
+    <h2>Create the database</h2>
+  </div>
+  <div class="step-body">
+    <p>Open Command Prompt or PowerShell. Navigate to the project folder and run:</p>
+    <div class="cmd"><span class="comment">-- Step 5a: Create the database</span>
+psql -U postgres -h localhost -c "CREATE DATABASE farmfresh;"
+
+<span class="comment">-- Step 5b: Create all tables</span>
+psql -U postgres -h localhost -d farmfresh -f database\schema.sql
+
+<span class="comment">-- Step 5c: Insert seed data (admin user, products, sample users)</span>
+psql -U postgres -h localhost -d farmfresh -f database\seed.sql</div>
+    <div class="info">Enter password <code>1234</code> each time when prompted. Run these from inside the <code>farmfresh</code> folder.</div>
+  </div>
+</div>
+
+<!-- Step 6 -->
+<div class="step">
+  <div class="step-header">
+    <div class="step-num purple">6</div>
+    <h2>Setup backend (Python + FastAPI)</h2>
+  </div>
+  <div class="step-body">
+    <div class="cmd"><span class="comment">-- Navigate to backend folder</span>
+cd farmfresh\backend
+
+<span class="comment">-- Create Python virtual environment</span>
+python -m venv venv
+
+<span class="comment">-- Activate virtual environment</span>
+venv\Scripts\activate
+
+<span class="comment">-- Install all Python dependencies</span>
+pip install -r requirements.txt</div>
+    <p>Your terminal prompt should show <code>(venv)</code> after activation.</p>
+  </div>
+</div>
+
+<!-- Step 7 -->
+<div class="step">
+  <div class="step-header">
+    <div class="step-num purple">7</div>
+    <h2>Configure database connection (.env file)</h2>
+  </div>
+  <div class="step-body">
+    <p>Create a file named <code>.env</code> inside the <code>backend</code> folder with this content:</p>
+    <div class="cmd">DATABASE_URL=postgresql://postgres:1234@localhost:5432/farmfresh
+SECRET_KEY=farmfresh-secret-key-change-in-production
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
+REDIS_URL=redis://localhost:6379/0</div>
+    <div class="warning">If you set a different PostgreSQL password in Step 3, replace <code>1234</code> with your actual password in the DATABASE_URL above.</div>
+    <div class="info">To create a .env file: Open Notepad → paste content → File → Save As → change "Save as type" to "All Files" → name it <code>.env</code> → save in the backend folder.</div>
+  </div>
+</div>
+
+<!-- Step 8 -->
+<div class="step">
+  <div class="step-header">
+    <div class="step-num teal">8</div>
+    <h2>Start the backend server</h2>
+  </div>
+  <div class="step-body">
+    <p>From the <code>backend</code> folder (with venv activated):</p>
+    <div class="cmd">uvicorn app.main:app --reload --host 0.0.0.0 --port 8000</div>
+    <p>You should see: <code>Uvicorn running on http://0.0.0.0:8000</code></p>
+    <div class="info">Keep this terminal window open. The server must stay running.</div>
+  </div>
+</div>
+
+<!-- Step 9 -->
+<div class="step">
+  <div class="step-header">
+    <div class="step-num teal">9</div>
+    <h2>Setup and start frontend (React)</h2>
+  </div>
+  <div class="step-body">
+    <p>Open a <b>NEW</b> terminal window (keep backend terminal running):</p>
+    <div class="cmd"><span class="comment">-- Navigate to frontend folder</span>
+cd farmfresh\frontend
+
+<span class="comment">-- Install Node.js dependencies</span>
+npm install
+
+<span class="comment">-- Start the React development server</span>
+npm start</div>
+    <p>Browser should auto-open at <code>http://localhost:3000</code></p>
+  </div>
+</div>
+
+<!-- Step 10 -->
+<div class="step">
+  <div class="step-header">
+    <div class="step-num teal">10</div>
+    <h2>Test the application</h2>
+  </div>
+  <div class="step-body">
+    <p>Open browser and go to <code>http://localhost:3000</code></p>
+
+    <div class="cred-card">
+      <h4>Admin Login</h4>
+      <div class="cred-row"><span class="cred-label">Phone:</span> <code>9999999999</code></div>
+      <div class="cred-row"><span class="cred-label">Password:</span> <code>Admin@123</code></div>
+    </div>
+
+    <div class="cred-card">
+      <h4>Customer Login (sample)</h4>
+      <div class="cred-row"><span class="cred-label">Phone:</span> <code>9123456789</code></div>
+      <div class="cred-row"><span class="cred-label">Password:</span> <code>Admin@123</code></div>
+    </div>
+
+    <p style="font-size: 12px; color: #999; margin-top: 8px;">All seed users share the same password: Admin@123</p>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Project structure</h3>
+  <div class="tree">farmfresh/
+  backend/
+    app/              <span class="dim">-- FastAPI source code (routers, models, schemas)</span>
+    venv/             <span class="dim">-- Python virtual env (recreate on new machine)</span>
+    .env              <span class="dim">-- Database connection config (create manually)</span>
+    requirements.txt  <span class="dim">-- Python package list</span>
+  frontend/
+    src/              <span class="dim">-- React source code (pages, components)</span>
+    node_modules/     <span class="dim">-- Node packages (recreated by npm install)</span>
+    package.json      <span class="dim">-- Node dependency list</span>
+  database/
+    schema.sql        <span class="dim">-- Table definitions (run once)</span>
+    seed.sql          <span class="dim">-- Initial data: admin, products, sample users</span></div>
+</div>
+
+<div class="section">
+  <h3>Troubleshooting</h3>
+
+  <div class="trouble-item">
+    <h4>Backend won't start / connection refused?</h4>
+    <p>Check PostgreSQL service is running: Press <code>Win + R</code> → type <code>services.msc</code> → find "postgresql-x64-15" → click Start.</p>
+  </div>
+
+  <div class="trouble-item">
+    <h4>Password authentication failed?</h4>
+    <p>Update the password in <code>backend\.env</code> — change <code>1234</code> in the DATABASE_URL to whatever password was set during PostgreSQL installation.</p>
+  </div>
+
+  <div class="trouble-item">
+    <h4>Frontend shows "Network Error" or blank page?</h4>
+    <p>Make sure the backend server is running on port 8000 first. The frontend connects to <code>http://localhost:8000</code> by default.</p>
+  </div>
+
+  <div class="trouble-item">
+    <h4>"python" is not recognized?</h4>
+    <p>Python is not in PATH. Try <code>py</code> instead of <code>python</code>, or reinstall Python with "Add to PATH" checked.</p>
+  </div>
+
+  <div class="trouble-item">
+    <h4>"psql" is not recognized?</h4>
+    <p>Add PostgreSQL bin directory to system PATH: <code>C:\Program Files\PostgreSQL\15\bin</code></p>
+  </div>
+
+  <div class="trouble-item">
+    <h4>Port 3000 or 8000 already in use?</h4>
+    <p>Kill the process using the port: <code>netstat -ano | findstr :8000</code> then <code>taskkill /PID {pid} /F</code></p>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Daily usage — starting the app</h3>
+  <p style="font-size: 14px; color: #444; margin-bottom: 10px;">Every time you want to run the app, open 2 terminal windows:</p>
+
+  <div class="cred-card">
+    <h4>Terminal 1 — Backend</h4>
+    <div class="cmd" style="margin: 6px 0 0;">cd farmfresh\backend
+venv\Scripts\activate
+uvicorn app.main:app --reload --port 8000</div>
+  </div>
+
+  <div class="cred-card">
+    <h4>Terminal 2 — Frontend</h4>
+    <div class="cmd" style="margin: 6px 0 0;">cd farmfresh\frontend
+npm start</div>
+  </div>
+</div>
+
+<div class="footer">
+  FarmFresh Milk Delivery — Setup Guide v1.0 — June 2026
+</div>
+
+</body>
+</html>
