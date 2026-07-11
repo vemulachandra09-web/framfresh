@@ -17,6 +17,46 @@ export default function Profile() {
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSave = async () => {
+
+    if (!form.name.trim()) {
+      return toast.error("Name is required");
+    }
+
+    if (form.name.length > 50) {
+      return toast.error("Name cannot exceed 50 characters");
+    }
+
+    if (!/^[A-Za-z ]+$/.test(form.name)) {
+      return toast.error("Name should contain only letters");
+    }
+
+    if (!form.email.trim()) {
+      return toast.error("Email is required");
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      return toast.error("Invalid email");
+    }
+
+    if (!form.address.trim()) {
+      return toast.error("Address is required");
+    }
+
+    if (form.address.length > 200) {
+      return toast.error("Address is too long");
+    }
+
+    if (!form.city.trim()) {
+      return toast.error("City is required");
+    }
+
+    if (!/^[A-Za-z ]+$/.test(form.city)) {
+      return toast.error("Invalid city");
+    }
+
+    if (!/^[1-9][0-9]{5}$/.test(form.pincode)) {
+      return toast.error("Enter valid 6 digit pincode");
+    }
     try {
       await authAPI.updateMe(form);
       toast.success('Profile updated');
@@ -44,7 +84,7 @@ export default function Profile() {
           <div className="profile-form">
             <div className="form-group">
               <label>Name</label>
-              <input name="name" value={form.name} onChange={handleChange} />
+              <input name="name" maxLength={50} value={form.name} onChange={handleChange} />
             </div>
             <div className="form-group">
               <label>Email</label>
@@ -52,16 +92,34 @@ export default function Profile() {
             </div>
             <div className="form-group">
               <label>Address</label>
-              <input name="address" value={form.address} onChange={handleChange} />
+              <input
+                name="address"
+                maxLength={200}
+                value={form.address}
+                onChange={handleChange}
+              />
             </div>
             <div className="form-row">
               <div className="form-group">
                 <label>City</label>
-                <input name="city" value={form.city} onChange={handleChange} />
+                <input
+                  name="city"
+                  maxLength={50}
+                  value={form.city}
+                  onChange={handleChange}
+                />
               </div>
               <div className="form-group">
                 <label>Pincode</label>
-                <input name="pincode" value={form.pincode} onChange={handleChange} />
+                <input
+                  name="pincode"
+                  maxLength={6}
+                  value={form.pincode}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "");
+                    setForm({ ...form, pincode: value });
+                  }}
+                />
               </div>
             </div>
             <div className="profile-actions">
