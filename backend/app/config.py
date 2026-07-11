@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql://farmfresh:farmfresh123@localhost:5432/farmfresh"
     secret_key: str = "change-this-in-production"
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 1440
+    access_token_expire_minutes: int = 60 * 24 * 7
     whatsapp_api_url: str = "https://graph.facebook.com/v18.0"
     whatsapp_token: str = ""
     whatsapp_phone_id: str = ""
