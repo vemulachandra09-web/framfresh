@@ -101,7 +101,7 @@ export default function Orders() {
                   ) : (
                     <span className="order-product-name">Order</span>
                   )}
-                  <span className="order-id">{order.order_number}</span>
+                  <span className="order-id">{order.items?.map((item) => item.product?.name).join(", ")}</span>
                 </div>
                 <span className={`order-status status-${order.status}`}>
                   {STATUS_ICONS[order.status]} {order.status.replace(/_/g, ' ')}
