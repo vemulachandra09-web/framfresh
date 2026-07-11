@@ -4,6 +4,10 @@ from typing import Optional
 from uuid import UUID
 
 
+SUPPORTED_PINCODE = "515411"
+UNSUPPORTED_PINCODE_MESSAGE = f"Sorry, we currently deliver only in pincode {SUPPORTED_PINCODE}."
+
+
 class UserCreate(BaseModel):
     name: str
     phone: str
@@ -48,6 +52,8 @@ class UserCreate(BaseModel):
             digits = "".join(c for c in v if c.isdigit())
             if len(digits) != 6:
                 raise ValueError("Pincode must be exactly 6 digits")
+            if digits != SUPPORTED_PINCODE:
+                raise ValueError(UNSUPPORTED_PINCODE_MESSAGE)
             return digits
         return v
 

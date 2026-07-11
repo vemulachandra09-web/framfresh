@@ -3,6 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
+const SUPPORTED_PINCODE = '515411';
+const UNSUPPORTED_PINCODE_MESSAGE = `Sorry, we currently deliver only in pincode ${SUPPORTED_PINCODE}.`;
+
 export default function Login() {
   const [isRegister, setIsRegister] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '', password: '', email: '', address: '', city: '', pincode: '' });
@@ -33,6 +36,7 @@ export default function Login() {
       else if (form.name.trim().length < 2) errs.name = 'Name must be at least 2 characters';
       if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Enter a valid email address';
       if (form.pincode && !/^\d{6}$/.test(form.pincode)) errs.pincode = 'Pincode must be 6 digits';
+      else if (form.pincode && form.pincode !== SUPPORTED_PINCODE) errs.pincode = UNSUPPORTED_PINCODE_MESSAGE;
     }
     if (!form.phone) errs.phone = 'Phone number is required';
     else if (!/^\d{10}$/.test(form.phone)) errs.phone = 'Phone number must be exactly 10 digits';

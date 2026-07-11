@@ -55,6 +55,12 @@ export default function Navbar() {
     } catch { }
   };
 
+  const closeMenu = () => setMenuOpen(false);
+
+  useEffect(() => {
+    closeMenu();
+  }, [location.pathname]);
+
   const handleMarkAllRead = async () => {
     await notificationsAPI.markAllRead();
     setUnread(0);
@@ -81,6 +87,7 @@ export default function Navbar() {
   };
 
   const handleLogout = () => {
+    closeMenu();
     logout();
     navigate('/login');
   };
@@ -94,7 +101,7 @@ export default function Navbar() {
   return (
     <>
       <nav className="navbar">
-        <Link to="/" className="navbar-brand">
+        <Link to="/" className="navbar-brand" onClick={closeMenu}>
           <span className="brand-icon">🐄</span>
           <span>FarmFresh</span>
         </Link>
@@ -146,20 +153,20 @@ export default function Navbar() {
         <div className={`nav-links ${menuOpen ? 'open' : ''}`}>
           {isAdmin ? (
             <>
-              <Link to="/admin" className={isActive('/admin') ? 'active' : ''}>Dashboard</Link>
-              <Link to="/admin/customers" className={isActive('/admin/customers') ? 'active' : ''}>Customers</Link>
-              <Link to="/admin/subscriptions" className={isActive('/admin/subscriptions') ? 'active' : ''}>Subscriptions</Link>
-              <Link to="/admin/orders" className={isActive('/admin/orders') ? 'active' : ''}>Orders</Link>
-              <Link to="/admin/products" className={isActive('/admin/products') ? 'active' : ''}>Products</Link>
-              <Link to="/admin/deliveries" className={isActive('/admin/deliveries') ? 'active' : ''}>Delivery</Link>
-              <Link to="/admin/reports" className={isActive('/admin/reports') ? 'active' : ''}>Reports</Link>
+              <Link to="/admin" onClick={closeMenu} className={isActive('/admin') ? 'active' : ''}>Dashboard</Link>
+              <Link to="/admin/customers" onClick={closeMenu} className={isActive('/admin/customers') ? 'active' : ''}>Customers</Link>
+              <Link to="/admin/subscriptions" onClick={closeMenu} className={isActive('/admin/subscriptions') ? 'active' : ''}>Subscriptions</Link>
+              <Link to="/admin/orders" onClick={closeMenu} className={isActive('/admin/orders') ? 'active' : ''}>Orders</Link>
+              <Link to="/admin/products" onClick={closeMenu} className={isActive('/admin/products') ? 'active' : ''}>Products</Link>
+              <Link to="/admin/deliveries" onClick={closeMenu} className={isActive('/admin/deliveries') ? 'active' : ''}>Delivery</Link>
+              <Link to="/admin/reports" onClick={closeMenu} className={isActive('/admin/reports') ? 'active' : ''}>Reports</Link>
             </>
           ) : (
             <>
-              <Link to="/" className={isActive('/') ? 'active' : ''}>Home</Link>
-              <Link to="/subscriptions" className={isActive('/subscriptions') ? 'active' : ''}>Subscriptions</Link>
-              <Link to="/orders" className={isActive('/orders') ? 'active' : ''}>Orders</Link>
-              <Link to="/profile" className={isActive('/profile') ? 'active' : ''}>Profile</Link>
+              <Link to="/" onClick={closeMenu} className={isActive('/') ? 'active' : ''}>Home</Link>
+              <Link to="/subscriptions" onClick={closeMenu} className={isActive('/subscriptions') ? 'active' : ''}>Subscriptions</Link>
+              <Link to="/orders" onClick={closeMenu} className={isActive('/orders') ? 'active' : ''}>Orders</Link>
+              <Link to="/profile" onClick={closeMenu} className={isActive('/profile') ? 'active' : ''}>Profile</Link>
             </>
           )}
           <button className="btn-logout" onClick={handleLogout}>

@@ -3,6 +3,11 @@ import { authAPI } from '../services/api';
 
 const AuthContext = createContext(null);
 
+const clearStoredAuth = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+};
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -11,21 +16,32 @@ export function AuthProvider({ children }) {
     const token = localStorage.getItem('token');
     const saved = localStorage.getItem('user');
     if (token && saved) {
-      setUser(JSON.parse(saved));
+      try {
+        setUser(JSON.parse(saved));
+      } catch {
+        clearStoredAuth();
+        setLoading(false);
+        return;
+      }
       authAPI.getMe()
         .then((res) => {
           setUser(res.data);
           localStorage.setItem('user', JSON.stringify(res.data));
         })
         .catch(() => {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+          clearStoredAuth();
           setUser(null);
         })
         .finally(() => setLoading(false));
     } else {
       setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    const handleLogout = () => setUser(null);
+    window.addEventListener('auth:logout', handleLogout);
+    return () => window.removeEventListener('auth:logout', handleLogout);
   }, []);
 
   const login = async (phone, password) => {
@@ -45,8 +61,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearStoredAuth();
     setUser(null);
   };
 
