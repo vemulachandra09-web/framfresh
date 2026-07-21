@@ -12,6 +12,12 @@ class Settings(BaseSettings):
     whatsapp_verify_token: str = "farmfresh_whatsapp_verify_2026"
     redis_url: str = "redis://localhost:6379/0"
     log_level: str = "INFO"
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_email: str = ""
+    smtp_use_tls: bool = True
 
     class Config:
         env_file = ".env"
