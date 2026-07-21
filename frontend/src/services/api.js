@@ -32,6 +32,8 @@ export const authAPI = {
   login: (data) => api.post('/api/auth/login', data),
   getMe: () => api.get('/api/auth/me'),
   updateMe: (data) => api.put('/api/auth/me', data),
+  sendEmailOtp: (email) => api.post('/api/auth/email-otp/send', { email }),
+  verifyEmailOtp: (email, otp) => api.post('/api/auth/email-otp/verify', { email, otp }),
 };
 
 export const productsAPI = {

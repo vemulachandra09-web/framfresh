@@ -16,6 +16,7 @@ class UserCreate(BaseModel):
     address: Optional[str] = None
     city: Optional[str] = None
     pincode: Optional[str] = None
+    email_otp: Optional[str] = None
 
     @field_validator("name")
     @classmethod
@@ -58,6 +59,23 @@ class UserCreate(BaseModel):
         return v
 
 
+class EmailOtpRequest(BaseModel):
+    email: EmailStr
+
+
+class EmailOtpVerify(BaseModel):
+    email: EmailStr
+    otp: str
+
+    @field_validator("otp")
+    @classmethod
+    def otp_must_be_6_digits(cls, v):
+        digits = "".join(c for c in v if c.isdigit())
+        if len(digits) != 6:
+            raise ValueError("OTP must be 6 digits")
+        return digits
+
+
 class UserLogin(BaseModel):
     phone: str
     password: str
@@ -85,6 +103,58 @@ class UserUpdate(BaseModel):
     address: Optional[str] = None
     city: Optional[str] = None
     pincode: Optional[str] = None
+
+    @field_validator("name")
+    @classmethod
+    def update_name_valid(cls, v):
+        if v is not None:
+            name = v.strip()
+            if len(name) < 2:
+                raise ValueError("Name must be at least 2 characters")
+            if len(name) > 50:
+                raise ValueError("Name cannot exceed 50 characters")
+            if not all(c.isalpha() or c.isspace() for c in name):
+                raise ValueError("Name should contain only letters")
+            return name
+        return v
+
+    @field_validator("address")
+    @classmethod
+    def update_address_valid(cls, v):
+        if v is not None:
+            address = v.strip()
+            if len(address) < 5:
+                raise ValueError("Address must be at least 5 characters")
+            if len(address) > 200:
+                raise ValueError("Address is too long")
+            return address
+        return v
+
+    @field_validator("city")
+    @classmethod
+    def update_city_valid(cls, v):
+        if v is not None:
+            city = v.strip()
+            if len(city) < 2:
+                raise ValueError("City must be at least 2 characters")
+            if len(city) > 50:
+                raise ValueError("City cannot exceed 50 characters")
+            if not all(c.isalpha() or c.isspace() for c in city):
+                raise ValueError("City should contain only letters")
+            return city
+        return v
+
+    @field_validator("pincode")
+    @classmethod
+    def update_pincode_valid(cls, v):
+        if v is not None:
+            digits = "".join(c for c in v if c.isdigit())
+            if len(digits) != 6:
+                raise ValueError("Pincode must be exactly 6 digits")
+            if digits != SUPPORTED_PINCODE:
+                raise ValueError(UNSUPPORTED_PINCODE_MESSAGE)
+            return digits
+        return v
 
 
 class Token(BaseModel):

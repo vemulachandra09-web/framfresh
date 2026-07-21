@@ -1417,6 +1417,28 @@ body {
 .modal-actions .btn-primary:hover { background: var(--green-dark); }
 .modal-actions .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
+.otp-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.otp-row input {
+  min-width: 0;
+  flex: 1;
+}
+
+.otp-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .otp-row {
+    flex-direction: column;
+  }
+}
+
 .modal-actions .btn-outline:hover { background: var(--gray-100); }
 
 /* ===== PWA INSTALL BANNER ===== */

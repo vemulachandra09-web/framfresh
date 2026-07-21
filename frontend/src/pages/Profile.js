@@ -3,6 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
+const SUPPORTED_PINCODE = '515411';
+const UNSUPPORTED_PINCODE_MESSAGE = `Sorry, we currently deliver only in pincode ${SUPPORTED_PINCODE}.`;
+
 export default function Profile() {
   const { user, logout } = useAuth();
   const [editing, setEditing] = useState(false);
@@ -14,7 +17,16 @@ export default function Profile() {
     pincode: user?.pincode || '',
   });
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'name' || name === 'city') {
+      setForm({ ...form, [name]: value.replace(/[^A-Za-z ]/g, '').slice(0, 50) });
+    } else if (name === 'address') {
+      setForm({ ...form, address: value.slice(0, 200) });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
+  };
 
   const handleSave = async () => {
 
@@ -42,6 +54,10 @@ export default function Profile() {
       return toast.error("Address is required");
     }
 
+    if (form.address.trim().length < 5) {
+      return toast.error("Address must be at least 5 characters");
+    }
+
     if (form.address.length > 200) {
       return toast.error("Address is too long");
     }
@@ -57,12 +73,20 @@ export default function Profile() {
     if (!/^[1-9][0-9]{5}$/.test(form.pincode)) {
       return toast.error("Enter valid 6 digit pincode");
     }
+
+    if (form.pincode !== SUPPORTED_PINCODE) {
+      return toast.error(UNSUPPORTED_PINCODE_MESSAGE);
+    }
     try {
       await authAPI.updateMe(form);
       toast.success('Profile updated');
       setEditing(false);
     } catch (err) {
-      toast.error('Failed to update');
+      const detail = err.response?.data?.detail;
+      const msg = Array.isArray(detail)
+        ? detail.map((d) => d.msg || d.message || JSON.stringify(d)).join(', ')
+        : detail || 'Failed to update';
+      toast.error(msg);
     }
   };
 
