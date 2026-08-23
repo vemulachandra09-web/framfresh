@@ -215,6 +215,7 @@ class SubscriptionResponse(BaseModel):
     billing_cycle: str
     start_date: date
     end_date: Optional[date]
+    paid_until: Optional[date]
     delivery_time: str
     status: str
     paused_from: Optional[date]
@@ -318,6 +319,7 @@ class OrderCreate(BaseModel):
 
 class PaymentCreate(BaseModel):
     order_id: Optional[UUID] = None
+    subscription_id: Optional[UUID] = None
     amount: float
     payment_method: str
     upi_provider: Optional[str] = None
@@ -328,11 +330,34 @@ class PaymentResponse(BaseModel):
     id: UUID
     user_id: UUID
     order_id: Optional[UUID]
+    subscription_id: Optional[UUID]
+    invoice_id: Optional[UUID]
+    billing_period_start: Optional[date]
+    billing_period_end: Optional[date]
     amount: float
     payment_method: str
     upi_provider: Optional[str]
     transaction_id: Optional[str]
     status: str
+    paid_at: Optional[datetime]
+    created_at: datetime
+    user: Optional[UserResponse] = None
+    subscription: Optional[SubscriptionResponse] = None
+
+    class Config:
+        from_attributes = True
+
+
+class InvoiceResponse(BaseModel):
+    id: UUID
+    invoice_number: str
+    user_id: UUID
+    subscription_id: Optional[UUID]
+    billing_period_start: date
+    billing_period_end: date
+    total_amount: float
+    status: str
+    due_date: date
     paid_at: Optional[datetime]
     created_at: datetime
 

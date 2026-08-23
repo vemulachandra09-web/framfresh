@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { adminAPI } from '../../services/api';
+import { formatStatus } from '../../utils/format';
 import toast from 'react-hot-toast';
 
 export default function AdminOrders() {
@@ -19,7 +20,7 @@ export default function AdminOrders() {
         <button className={!filter ? 'active' : ''} onClick={() => { setFilter(null); setPage(1); }}>All</button>
         {['pending', 'confirmed', 'out_for_delivery', 'delivered', 'cancelled'].map((s) => (
           <button key={s} className={filter === s ? 'active' : ''} onClick={() => { setFilter(s); setPage(1); }}>
-            {s.replace(/_/g, ' ')}
+            {formatStatus(s)}
           </button>
         ))}
       </div>
@@ -44,7 +45,7 @@ export default function AdminOrders() {
               <td>{order.items?.map((i) => `${i.product?.name || 'Product'} x${i.quantity}`).join(', ') || '-'}</td>
               <td>{order.delivery_date}</td>
               <td>₹{order.total_amount}</td>
-              <td><span className={`badge badge-${order.status}`}>{order.status.replace(/_/g, ' ')}</span></td>
+              <td><span className={`badge badge-${order.status}`}>{formatStatus(order.status)}</span></td>
               <td>{new Date(order.created_at).toLocaleDateString()}</td>
             </tr>
           ))}

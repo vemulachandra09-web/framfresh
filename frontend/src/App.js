@@ -12,6 +12,7 @@ import OrderNow from './pages/OrderNow';
 import Subscriptions from './pages/Subscriptions';
 import Orders from './pages/Orders';
 import Payment from './pages/Payment';
+import PaymentHistory from './pages/PaymentHistory';
 import TrackDelivery from './pages/TrackDelivery';
 import Profile from './pages/Profile';
 import Dashboard from './pages/admin/Dashboard';
@@ -20,6 +21,7 @@ import AdminSubscriptions from './pages/admin/AdminSubscriptions';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminDeliveries from './pages/admin/AdminDeliveries';
+import AdminPayments from './pages/admin/AdminPayments';
 import Reports from './pages/admin/Reports';
 
 export default function App() {
@@ -43,6 +45,7 @@ export default function App() {
           <Route path="/subscriptions" element={<ProtectedRoute><Subscriptions /></ProtectedRoute>} />
           <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
           <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+          <Route path="/payments" element={<ProtectedRoute><PaymentHistory /></ProtectedRoute>} />
           <Route path="/track/:orderId" element={<ProtectedRoute><TrackDelivery /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
@@ -53,6 +56,7 @@ export default function App() {
           <Route path="/admin/orders" element={<ProtectedRoute adminOnly><AdminOrders /></ProtectedRoute>} />
           <Route path="/admin/products" element={<ProtectedRoute adminOnly><AdminProducts /></ProtectedRoute>} />
           <Route path="/admin/deliveries" element={<ProtectedRoute adminOnly><AdminDeliveries /></ProtectedRoute>} />
+          <Route path="/admin/payments" element={<ProtectedRoute adminOnly><AdminPayments /></ProtectedRoute>} />
           <Route path="/admin/reports" element={<ProtectedRoute adminOnly><Reports /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" />} />

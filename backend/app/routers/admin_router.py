@@ -7,6 +7,7 @@ from ..models import User, Subscription, SkipDate, Order, OrderItem, Payment, De
 from ..schemas import (
     DashboardStats, OrderResponse, UserResponse,
     SubscriptionResponse, DeliveryResponse, DeliveryListResponse, ProductResponse,
+    PaymentResponse,
 )
 from ..auth import require_admin
 
@@ -94,6 +95,27 @@ def list_all_orders(
     if delivery_date:
         query = query.filter(Order.delivery_date == delivery_date)
     return query.order_by(Order.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+
+
+@router.get("/payments", response_model=list[PaymentResponse])
+def list_all_payments(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, le=100),
+    admin=Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return (
+        db.query(Payment)
+        .options(
+            joinedload(Payment.user),
+            joinedload(Payment.subscription).joinedload(Subscription.product),
+            joinedload(Payment.invoice),
+        )
+        .order_by(Payment.created_at.desc())
+        .offset((page - 1) * limit)
+        .limit(limit)
+        .all()
+    )
 
 
 @router.get("/deliveries", response_model=list[DeliveryListResponse])

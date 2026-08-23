@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { adminAPI } from '../../services/api';
+import { formatStatus } from '../../utils/format';
 import toast from 'react-hot-toast';
 
 function formatDate(d) {
@@ -31,7 +32,7 @@ export default function AdminSubscriptions() {
         <button className={!filter ? 'active' : ''} onClick={() => { setFilter(null); setPage(1); }}>All</button>
         {['active', 'paused', 'cancelled'].map((s) => (
           <button key={s} className={filter === s ? 'active' : ''} onClick={() => { setFilter(s); setPage(1); }}>
-            {s.charAt(0).toUpperCase() + s.slice(1)}
+            {formatStatus(s)}
           </button>
         ))}
       </div>
@@ -59,7 +60,7 @@ export default function AdminSubscriptions() {
                 <td>{sub.quantity}</td>
                 <td>{sub.billing_cycle}</td>
                 <td>{sub.start_date}</td>
-                <td><span className={`badge badge-${sub.status}`}>{sub.status}</span></td>
+                <td><span className={`badge badge-${sub.status}`}>{formatStatus(sub.status)}</span></td>
                 <td>{sub.paused_until || '-'}</td>
                 <td>
                   {skips.length === 0 ? (

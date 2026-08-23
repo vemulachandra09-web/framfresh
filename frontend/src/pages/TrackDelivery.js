@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { deliveryAPI } from '../services/api';
+import { formatStatus } from '../utils/format';
 import toast from 'react-hot-toast';
 
 const STEPS = ['assigned', 'picked_up', 'on_the_way', 'delivered'];
@@ -36,7 +37,7 @@ export default function TrackDelivery() {
             {STEPS.map((step, i) => (
               <div key={step} className={`tracking-step ${i <= currentStep ? 'completed' : ''}`}>
                 <div className="step-dot" />
-                <span>{step.replace(/_/g, ' ')}</span>
+                <span>{formatStatus(step)}</span>
               </div>
             ))}
           </div>
@@ -47,7 +48,7 @@ export default function TrackDelivery() {
               <p className="partner-name">{delivery.delivery_partner.name}</p>
               <div className="partner-status">
                 <span>Status</span>
-                <span className="status-text">{delivery.status.replace(/_/g, ' ')}</span>
+                <span className="status-text">{formatStatus(delivery.status)}</span>
               </div>
               {delivery.estimated_time && (
                 <div className="partner-eta">

@@ -85,6 +85,7 @@ export const adminAPI = {
   customers: (page) => api.get('/api/admin/customers', { params: { page } }),
   subscriptions: (status, page) => api.get('/api/admin/subscriptions', { params: { status, page } }),
   orders: (status, date, page) => api.get('/api/admin/orders', { params: { status, delivery_date: date, page } }),
+  payments: (page) => api.get('/api/admin/payments', { params: { page } }),
   deliveries: (status, page) => api.get('/api/admin/deliveries', { params: { status, page } }),
   revenue: (start, end) => api.get('/api/admin/reports/revenue', { params: { start_date: start, end_date: end } }),
 };

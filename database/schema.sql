@@ -42,6 +42,7 @@ CREATE TABLE subscriptions (
     billing_cycle VARCHAR(20) DEFAULT 'monthly' CHECK (billing_cycle IN ('weekly', 'monthly', 'custom')),
     start_date DATE NOT NULL,
     end_date DATE,
+    paid_until DATE,
     delivery_time VARCHAR(20) DEFAULT 'morning',
     status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'paused', 'cancelled', 'expired')),
     paused_from DATE,
@@ -78,6 +79,10 @@ CREATE TABLE payments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id),
     order_id UUID REFERENCES orders(id),
+    subscription_id UUID REFERENCES subscriptions(id),
+    invoice_id UUID,
+    billing_period_start DATE,
+    billing_period_end DATE,
     amount DECIMAL(10, 2) NOT NULL,
     payment_method VARCHAR(50) NOT NULL,
     upi_provider VARCHAR(50),
@@ -116,6 +121,10 @@ CREATE TABLE invoices (
     paid_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE payments
+    ADD CONSTRAINT fk_payments_invoice
+    FOREIGN KEY (invoice_id) REFERENCES invoices(id);
 
 -- Skip dates (vacation mode)
 CREATE TABLE skip_dates (
@@ -169,6 +178,8 @@ CREATE INDEX idx_orders_status ON orders(status);
 CREATE INDEX idx_deliveries_order ON deliveries(order_id);
 CREATE INDEX idx_deliveries_partner ON deliveries(delivery_partner_id);
 CREATE INDEX idx_payments_user ON payments(user_id);
+CREATE INDEX idx_payments_subscription ON payments(subscription_id);
+CREATE INDEX idx_payments_invoice ON payments(invoice_id);
 CREATE INDEX idx_invoices_user ON invoices(user_id);
 CREATE INDEX idx_skip_dates_sub ON skip_dates(subscription_id);
 CREATE INDEX idx_skip_dates_date ON skip_dates(skip_date);
