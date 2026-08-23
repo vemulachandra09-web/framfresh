@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { adminAPI } from '../../services/api';
+import { formatStatus } from '../../utils/format';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import toast from 'react-hot-toast';
 
@@ -85,7 +86,7 @@ export default function Dashboard() {
                 <td>{order.items?.map((i) => i.product?.name || '').join(', ') || '-'}</td>
                 <td>{order.delivery_date}</td>
                 <td>₹{order.total_amount}</td>
-                <td><span className={`badge badge-${order.status}`}>{order.status}</span></td>
+                <td><span className={`badge badge-${order.status}`}>{formatStatus(order.status)}</span></td>
               </tr>
             ))}
           </tbody>

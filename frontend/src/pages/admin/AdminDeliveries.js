@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { adminAPI } from '../../services/api';
+import { formatStatus } from '../../utils/format';
 import toast from 'react-hot-toast';
 
 function Stars({ count }) {
@@ -27,7 +28,7 @@ export default function AdminDeliveries() {
         <button className={!filter ? 'active' : ''} onClick={() => { setFilter(null); setPage(1); }}>All</button>
         {['assigned', 'picked_up', 'on_the_way', 'delivered', 'failed'].map((s) => (
           <button key={s} className={filter === s ? 'active' : ''} onClick={() => { setFilter(s); setPage(1); }}>
-            {s.replace(/_/g, ' ')}
+            {formatStatus(s)}
           </button>
         ))}
       </div>
@@ -52,7 +53,7 @@ export default function AdminDeliveries() {
               <td>{d.order_number || d.order_id.toString().slice(0, 8)}</td>
               <td>{d.customer_name || '-'}</td>
               <td>{d.delivery_partner?.name || 'Unassigned'}</td>
-              <td><span className={`badge badge-${d.status}`}>{d.status.replace(/_/g, ' ')}</span></td>
+              <td><span className={`badge badge-${d.status}`}>{formatStatus(d.status)}</span></td>
               <td>{d.estimated_time ? `${d.estimated_time}m` : '-'}</td>
               <td>{d.delivered_at ? new Date(d.delivered_at).toLocaleString() : '-'}</td>
               <td>{d.rating ? <Stars count={d.rating.quality_rating} /> : <span style={{ color: '#9ca3af' }}>-</span>}</td>

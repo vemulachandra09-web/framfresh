@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ordersAPI, deliveryAPI } from '../services/api';
+import { formatStatus } from '../utils/format';
 import toast from 'react-hot-toast';
 
 const STATUS_ICONS = {
@@ -81,7 +82,7 @@ export default function Orders() {
         <button className={!filter ? 'active' : ''} onClick={() => setFilter(null)}>All</button>
         {['pending', 'confirmed', 'out_for_delivery', 'delivered'].map((s) => (
           <button key={s} className={filter === s ? 'active' : ''} onClick={() => setFilter(s)}>
-            {STATUS_ICONS[s]} {s.replace(/_/g, ' ')}
+            {STATUS_ICONS[s]} {formatStatus(s)}
           </button>
         ))}
       </div>
@@ -104,7 +105,7 @@ export default function Orders() {
                   <span className="order-id">Order ID: {order.order_number}</span>
                 </div>
                 <span className={`order-status status-${order.status}`}>
-                  {STATUS_ICONS[order.status]} {order.status.replace(/_/g, ' ')}
+                  {STATUS_ICONS[order.status]} {formatStatus(order.status)}
                 </span>
               </div>
               <div className="order-body">

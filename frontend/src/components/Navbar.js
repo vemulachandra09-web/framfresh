@@ -77,11 +77,11 @@ export default function Navbar() {
     if (isAdmin) {
       if (notif.type === 'delivery') navigate('/admin/deliveries');
       else if (notif.type === 'order') navigate('/admin/orders');
-      else if (notif.type === 'payment') navigate('/admin/orders');
+      else if (notif.type === 'payment') navigate('/admin/payments');
       else if (notif.type === 'subscription') navigate('/admin/subscriptions');
     } else {
       if (notif.type === 'delivery') navigate('/orders');
-      else if (notif.type === 'payment') navigate('/orders');
+      else if (notif.type === 'payment') navigate('/payments');
       else if (notif.type === 'subscription') navigate('/subscriptions');
     }
   };
@@ -157,6 +157,7 @@ export default function Navbar() {
               <Link to="/admin/customers" onClick={closeMenu} className={isActive('/admin/customers') ? 'active' : ''}>Customers</Link>
               <Link to="/admin/subscriptions" onClick={closeMenu} className={isActive('/admin/subscriptions') ? 'active' : ''}>Subscriptions</Link>
               <Link to="/admin/orders" onClick={closeMenu} className={isActive('/admin/orders') ? 'active' : ''}>Orders</Link>
+              <Link to="/admin/payments" onClick={closeMenu} className={isActive('/admin/payments') ? 'active' : ''}>Payments</Link>
               <Link to="/admin/products" onClick={closeMenu} className={isActive('/admin/products') ? 'active' : ''}>Products</Link>
               <Link to="/admin/deliveries" onClick={closeMenu} className={isActive('/admin/deliveries') ? 'active' : ''}>Delivery</Link>
               <Link to="/admin/reports" onClick={closeMenu} className={isActive('/admin/reports') ? 'active' : ''}>Reports</Link>
@@ -166,6 +167,7 @@ export default function Navbar() {
               <Link to="/" onClick={closeMenu} className={isActive('/') ? 'active' : ''}>Home</Link>
               <Link to="/subscriptions" onClick={closeMenu} className={isActive('/subscriptions') ? 'active' : ''}>Subscriptions</Link>
               <Link to="/orders" onClick={closeMenu} className={isActive('/orders') ? 'active' : ''}>Orders</Link>
+              <Link to="/payments" onClick={closeMenu} className={isActive('/payments') ? 'active' : ''}>Payments</Link>
               <Link to="/profile" onClick={closeMenu} className={isActive('/profile') ? 'active' : ''}>Profile</Link>
             </>
           )}

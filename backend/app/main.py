@@ -4,6 +4,7 @@ import uuid
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 from .config import settings
 from .database import engine, Base
 from .logging_config import setup_logging
@@ -23,6 +24,14 @@ logger = setup_logging(settings.log_level)
 
 try:
     Base.metadata.create_all(bind=engine)
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS paid_until DATE"))
+        conn.execute(text("ALTER TABLE payments ADD COLUMN IF NOT EXISTS subscription_id UUID REFERENCES subscriptions(id)"))
+        conn.execute(text("ALTER TABLE payments ADD COLUMN IF NOT EXISTS invoice_id UUID REFERENCES invoices(id)"))
+        conn.execute(text("ALTER TABLE payments ADD COLUMN IF NOT EXISTS billing_period_start DATE"))
+        conn.execute(text("ALTER TABLE payments ADD COLUMN IF NOT EXISTS billing_period_end DATE"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_payments_subscription ON payments(subscription_id)"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_payments_invoice ON payments(invoice_id)"))
     logger.info("event=database_schema_ready")
 except Exception:
     logger.exception("event=database_schema_failed")

@@ -1,17 +1,43 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { subscriptionsAPI, paymentsAPI } from '../services/api';
+import { formatStatus } from '../utils/format';
 import toast from 'react-hot-toast';
 
 const STATUS_COLORS = { active: '#16a34a', paused: '#f59e0b', cancelled: '#ef4444' };
 
-function getDaysUsed(startDate, status, pausedFrom) {
-  const start = new Date(startDate);
-  const end = status === 'cancelled' || status === 'paused'
-    ? (pausedFrom ? new Date(pausedFrom) : new Date())
-    : new Date();
-  const diff = Math.max(0, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
-  return diff;
+function parseDate(value) {
+  if (!value) return null;
+  const [year, month, day] = value.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function toDateString(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function addDays(date, days) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+function addMonths(date, months) {
+  const next = new Date(date);
+  const originalDay = next.getDate();
+  next.setMonth(next.getMonth() + months, 1);
+  const lastDay = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+  next.setDate(Math.min(originalDay, lastDay));
+  return next;
+}
+
+function getPeriodEnd(start, billingCycle) {
+  if (billingCycle === 'weekly') return addDays(start, 6);
+  if (billingCycle === 'monthly') return addDays(addMonths(start, 1), -1);
+  return addDays(start, 29);
 }
 
 function formatDate(d) {
@@ -36,9 +62,33 @@ export default function Subscriptions() {
   useEffect(() => { load(); }, []);
 
   const calcBill = (sub) => {
-    const days = getDaysUsed(sub.start_date, sub.status, sub.paused_from);
+    const start = sub.paid_until ? addDays(parseDate(sub.paid_until), 1) : parseDate(sub.start_date);
+    const periodEnd = getPeriodEnd(start, sub.billing_cycle);
+    const today = parseDate(toDateString(new Date()));
+    const effectiveEnd = sub.status === 'cancelled' || sub.status === 'paused'
+      ? (parseDate(sub.paused_from) || today)
+      : today;
+    const dueEnd = effectiveEnd < periodEnd ? effectiveEnd : periodEnd;
+    const skipSet = new Set((sub.skip_dates || []).map((s) => s.skip_date));
+    let days = 0;
+
+    if (start <= dueEnd) {
+      for (let d = new Date(start); d <= dueEnd; d = addDays(d, 1)) {
+        if (!skipSet.has(toDateString(d))) days += 1;
+      }
+    }
+
     const perDay = (sub.product?.price_per_day || 0) * sub.quantity;
-    return { days, perDay, total: days * perDay };
+    return {
+      days,
+      perDay,
+      total: days * perDay,
+      periodStart: toDateString(start),
+      periodEnd: toDateString(periodEnd),
+      billedThrough: start <= dueEnd ? toDateString(dueEnd) : toDateString(addDays(start, -1)),
+      nextBillStarts: toDateString(start),
+      isPaidCurrent: start > today,
+    };
   };
 
   const handlePause = async () => {
@@ -89,6 +139,7 @@ export default function Subscriptions() {
     try {
       const bill = calcBill(payTarget);
       await paymentsAPI.create({
+        subscription_id: payTarget.id,
         amount: bill.total,
         payment_method: 'upi',
         upi_provider: 'gpay',
@@ -150,7 +201,7 @@ export default function Subscriptions() {
 
   const futureSkips = (sub) =>
     (sub.skip_dates || [])
-      .filter((s) => new Date(s.skip_date) >= new Date(new Date().toISOString().split('T')[0]))
+      .filter((s) => parseDate(s.skip_date) >= parseDate(toDateString(new Date())))
       .sort((a, b) => new Date(a.skip_date) - new Date(b.skip_date));
 
   return (
@@ -174,7 +225,7 @@ export default function Subscriptions() {
               <div key={sub.id} className="sub-card">
                 <div className="sub-header">
                   <span className="sub-badge" style={{ background: STATUS_COLORS[sub.status] }}>
-                    {sub.status}
+                    {formatStatus(sub.status)}
                   </span>
                   <span className="sub-cycle">{sub.billing_cycle}</span>
                 </div>
@@ -182,11 +233,16 @@ export default function Subscriptions() {
                 <div className="sub-details">
                   <span>Qty: {sub.quantity}</span>
                   <span>From: {sub.start_date}</span>
+                  {sub.paid_until && <span>Paid until: {sub.paid_until}</span>}
                   {sub.product && <span>₹{sub.product.price_per_day * sub.quantity}/day</span>}
                 </div>
 
                 {sub.status !== 'cancelled' && (
                   <div className="sub-bill-summary">
+                    <div className="sub-bill-row">
+                      <span>Billing period</span>
+                      <span>{bill.periodStart} to {bill.billedThrough}</span>
+                    </div>
                     <div className="sub-bill-row">
                       <span>Days used</span>
                       <span>{bill.days} days</span>
@@ -199,6 +255,12 @@ export default function Subscriptions() {
                       <span>Amount due</span>
                       <span>₹{bill.total}</span>
                     </div>
+                    {bill.total === 0 && (
+                      <div className="sub-bill-row">
+                        <span>Next bill starts</span>
+                        <span>{bill.nextBillStarts}</span>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -221,7 +283,9 @@ export default function Subscriptions() {
                 <div className="sub-actions">
                   {sub.status === 'active' && (
                     <>
-                      <button className="btn-primary btn-sm" onClick={() => setPayTarget(sub)}>Pay ₹{bill.total}</button>
+                      <button className="btn-primary btn-sm" onClick={() => setPayTarget(sub)} disabled={bill.total <= 0}>
+                        {bill.total > 0 ? `Pay ₹${bill.total}` : 'Paid'}
+                      </button>
                       <button className="btn-outline" onClick={() => setSkipTarget(sub)}>Skip Days</button>
                       <button className="btn-outline" onClick={() => setPauseTarget(sub)}>Pause</button>
                       <button className="btn-danger-outline" onClick={() => setCancelTarget(sub)}>Cancel</button>
@@ -229,7 +293,9 @@ export default function Subscriptions() {
                   )}
                   {sub.status === 'paused' && (
                     <>
-                      <button className="btn-primary btn-sm" onClick={() => setPayTarget(sub)}>Pay ₹{bill.total}</button>
+                      <button className="btn-primary btn-sm" onClick={() => setPayTarget(sub)} disabled={bill.total <= 0}>
+                        {bill.total > 0 ? `Pay ₹${bill.total}` : 'Paid'}
+                      </button>
                       <button className="btn-outline" onClick={() => handleResume(sub.id)}>Resume</button>
                       <button className="btn-danger-outline" onClick={() => setCancelTarget(sub)}>Cancel</button>
                     </>
@@ -252,6 +318,7 @@ export default function Subscriptions() {
               <p><strong>{payTarget.product?.name}</strong></p>
               <div className="sub-bill-summary" style={{ margin: '1rem 0' }}>
                 <div className="sub-bill-row"><span>Days used</span><span>{bill.days} days</span></div>
+                <div className="sub-bill-row"><span>Billing period</span><span>{bill.periodStart} to {bill.billedThrough}</span></div>
                 <div className="sub-bill-row"><span>Rate</span><span>₹{bill.perDay}/day x {bill.days}</span></div>
                 <div className="sub-bill-row sub-bill-total"><span>Total</span><span>₹{bill.total}</span></div>
               </div>

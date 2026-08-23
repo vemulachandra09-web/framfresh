@@ -55,6 +55,7 @@ class Subscription(Base):
     billing_cycle = Column(String(20), default="monthly")
     start_date = Column(Date, nullable=False)
     end_date = Column(Date)
+    paid_until = Column(Date)
     delivery_time = Column(String(20), default="morning")
     status = Column(String(20), default="active")
     paused_from = Column(Date)
@@ -65,6 +66,7 @@ class Subscription(Base):
     user = relationship("User", back_populates="subscriptions")
     product = relationship("Product")
     skip_dates = relationship("SkipDate", back_populates="subscription", cascade="all, delete-orphan")
+    invoices = relationship("Invoice", back_populates="subscription")
 
 
 class Order(Base):
@@ -106,6 +108,10 @@ class Payment(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     order_id = Column(UUID(as_uuid=True), ForeignKey("orders.id"))
+    subscription_id = Column(UUID(as_uuid=True), ForeignKey("subscriptions.id"))
+    invoice_id = Column(UUID(as_uuid=True), ForeignKey("invoices.id"))
+    billing_period_start = Column(Date)
+    billing_period_end = Column(Date)
     amount = Column(Numeric(10, 2), nullable=False)
     payment_method = Column(String(50), nullable=False)
     upi_provider = Column(String(50))
@@ -115,6 +121,9 @@ class Payment(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     order = relationship("Order", back_populates="payment")
+    subscription = relationship("Subscription")
+    invoice = relationship("Invoice", back_populates="payment")
+    user = relationship("User")
 
 
 class Delivery(Base):
@@ -151,6 +160,10 @@ class Invoice(Base):
     due_date = Column(Date, nullable=False)
     paid_at = Column(DateTime)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")
+    subscription = relationship("Subscription", back_populates="invoices")
+    payment = relationship("Payment", back_populates="invoice", uselist=False)
 
 
 class SkipDate(Base):
